@@ -38,7 +38,12 @@ const MainNav = ({ openNav }: props) => {
 
         {/* Button area  */}
         <div className="flex items-center gap-2">
-          <Button className="p-4 cursor-pointer">Login</Button>
+          <Link
+            href="/login"
+            className="py-2 px-4 cursor-pointer bg-cyan-400 rounded-full text-md text-white"
+          >
+            Login
+          </Link>
           <Menu
             onClick={openNav}
             className="w-8 h-8 cursor-pointer text-black lg:hidden"
