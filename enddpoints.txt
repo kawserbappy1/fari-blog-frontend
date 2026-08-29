@@ -1,0 +1,48 @@
+এই frontend architecture কাজ করার জন্য backend-এ:
+
+GET  /api/v1/auth/me
+POST /api/v1/auth/logout
+POST /api/v1/auth/login
+
+থাকা দরকার।
+
+বিশেষ করে:
+
+GET /auth/me
+
+এটা access token cookie দেখে user বের করবে।
+
+
+/auth/me response কেমন হওয়া উচিত
+
+Backend থেকে ideally:
+
+{
+  "success": true,
+  "message": "Current user retrieved successfully",
+  "data": {
+    "id": "user-id",
+    "name": "Bappy",
+    "email": "bappy@gmail.com",
+    "role": "USER",
+    "emailVerified": true,
+    "profile": {
+      "id": "profile-id",
+      "displayName": "Bappy",
+      "profilePhoto": null,
+      "bio": "Hello",
+      "location": "Bangladesh"
+    }
+  }
+}
+
+const { data: user } = useCurrentUser();
+
+
+#################################
+Theme toggle system
+
+1.npm install next-themes
+2.Create Theme provider function and wrap root layout (<html lang="en" suppressHydrationWarning>)
+3.Create theme toggle component 
+4.Import it your navbar or else

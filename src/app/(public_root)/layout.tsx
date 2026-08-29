@@ -8,7 +8,6 @@ const PublicLayout = ({ children }: layoutProps) => {
     <div>
       <ResponsiveNav></ResponsiveNav>
       {children}
-      <h1>Public Layout Footer</h1>
     </div>
   );
 };
