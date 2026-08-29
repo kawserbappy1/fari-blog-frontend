@@ -81,3 +81,8 @@ export type Profile = {
   createAt: string;
   updateAt: string;
 };
+export type ChangePasswordPayload = {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+};

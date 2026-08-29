@@ -2,6 +2,7 @@ import { apiClient } from "@/lib/api-client";
 import type {
   ApiResponse,
   AuthResponse,
+  ChangePasswordPayload,
   UpdateProfilePayload,
   User,
 } from "@/types/auth";
@@ -79,5 +80,17 @@ export const updateMyProfile = async (
   return apiClient<AuthResponse>("/auth/me", {
     method: "PATCH",
     body: formData,
+  });
+};
+
+// ============================================
+// change password
+// ============================================
+export const changePassword = async (
+  payload: ChangePasswordPayload,
+): Promise<AuthResponse> => {
+  return apiClient<AuthResponse>("/auth/change-password", {
+    method: "PATCH",
+    body: JSON.stringify(payload),
   });
 };

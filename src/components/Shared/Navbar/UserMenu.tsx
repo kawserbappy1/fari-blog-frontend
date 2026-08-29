@@ -6,6 +6,7 @@ import {
   LogOut,
   Loader2,
   User as UserIcon,
+  KeyRound,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -111,6 +112,16 @@ const UserMenu = ({ user }: Props) => {
             <LayoutDashboard className="mr-2 h-4 w-4" />
 
             <span>Dashboard</span>
+          </Link>
+        </DropdownMenuItem>
+
+        <DropdownMenuItem asChild>
+          <Link
+            href="/resetPassword"
+            className="cursor-pointer flex items-center"
+          >
+            <KeyRound className="mr-2 h-4 w-4" />
+            <span>Change Password</span>
           </Link>
         </DropdownMenuItem>
 

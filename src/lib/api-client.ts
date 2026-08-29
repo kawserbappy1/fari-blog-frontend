@@ -1,4 +1,3 @@
-//apiClient হলো frontend এবং backend API-এর মাঝখানে একটা reusable communication layer।
 const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_BASE_URL;
 
 if (!API_BASE_URL) {
@@ -6,11 +5,34 @@ if (!API_BASE_URL) {
     "NEXT_PUBLIC_BACKEND_BASE_URL is not defined in environment variables",
   );
 }
-//Browser-এর built-in fetch() একটা type ব্যবহার করে:RequestInitএর মধ্যে থাকে:method,headers,body,cache,signal,credentials,mode,redirect
+
 type RequestOptions = RequestInit & {
-  //params তারপর আমরা নিজেদের একটা property যোগ করেছি:params optional এবং এর মধ্যে key-value query parameters পাঠানো যাবে।
-  //Record কী?এটা TypeScript-এর utility type। key হবে string।
   params?: Record<string, string | number | boolean | undefined>;
+};
+
+let refreshPromise: Promise<boolean> | null = null;
+
+const refreshAccessToken = async (): Promise<boolean> => {
+  if (refreshPromise) {
+    return refreshPromise;
+  }
+
+  refreshPromise = (async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/refresh-token`, {
+        method: "POST",
+        credentials: "include",
+      });
+
+      return response.ok;
+    } catch {
+      return false;
+    } finally {
+      refreshPromise = null;
+    }
+  })();
+
+  return refreshPromise;
 };
 
 export async function apiClient<T>(
@@ -19,78 +41,83 @@ export async function apiClient<T>(
 ): Promise<T> {
   const { params, ...fetchOptions } = options;
 
-  //API_BASE_URL=http://localhost:5000/api/v1
-  //endpoint=/posts
-  //url=http://localhost:5000/api/v1/posts
-
   let url = `${API_BASE_URL}${endpoint}`;
 
-  // ============================================
-  // Query Parameters
-  // ============================================
-
   if (params) {
-    //URLSearchParams: Browser-এর built-in API। এটা query parameter সুন্দরভাবে encode করতে সাহায্য করে। যেমন: search = hello world এটা URL-এর জন্য proper format-এ convert করবে।
     const searchParams = new URLSearchParams();
-
-    //Object.entries :Object.entries(params).forEach(([key,value]) => {}===> params = { page: 2, limit: 10, search:"react"};
 
     Object.entries(params).forEach(([key, value]) => {
       if (value !== undefined) {
-        //আমরা চাই না URL হোক:?page=1&search=undefined
         searchParams.append(key, String(value));
-        //page=2&limit=10
-        //কারণ URLSearchParams.append() string value নিয়ে কাজ করে। String(value) দিয়ে সবকিছুকে string করা হচ্ছে।
       }
     });
 
-    //ধরো:params: {page: 2,limit: 10,} তাহলে queryString হবে:page=2&limit=10
     const queryString = searchParams.toString();
 
     if (queryString) {
       url += `?${queryString}`;
     }
-
-    //পরে:http://localhost:5000/api/v1/posts?page=2&limit=10
   }
-  // ========================================================== // Detect FormData // ==========================================================
+
   const isFormData = fetchOptions.body instanceof FormData;
 
   const headers: HeadersInit = {
     ...(isFormData ? {} : { "Content-Type": "application/json" }),
-
-    // User চাইলে custom headers পাঠাতে পারবে।
     ...fetchOptions.headers,
   };
 
-  // ============================================
-  // Request
-  // ============================================
-
   const response = await fetch(url, {
     ...fetchOptions,
-    //...fetchOptions : এখানে user-এর দেওয়া fetch options spread করা হচ্ছে।যেমন: apiClient("/auth/login", {method:"POST",body: JSON.stringify(data),});
-
     credentials: "include",
-    //তোমার backend authentication যদি cookie-based হয়, তাহলে browser-কে বলতে হবে:cross-origin request হলেও cookies include করো।
     headers,
   });
 
-  // Response const data = await response.json().catch(() => null); Backend থেকে response এসেছে।  ধরো:{"success": true,"message": "Login successful","data": {}} response.json() সেটাকে JavaScript object বানাবে।
+  if (response.ok) {
+    return await response.json().catch(() => null);
+  }
 
-  //.catch(() => null) সব response JSON হবে এমন guarantee নেই।
-  const data = await response.json().catch(() => null);
+  if (response.status === 401 && endpoint !== "/auth/refresh-token") {
+    const refreshed = await refreshAccessToken();
 
-  if (!response.ok) {
+    if (refreshed) {
+      const retryResponse = await fetch(url, {
+        ...fetchOptions,
+        credentials: "include",
+        headers,
+      });
+
+      const retryData = await retryResponse.json().catch(() => null);
+
+      if (!retryResponse.ok) {
+        throw {
+          statusCode: retryResponse.status,
+          message:
+            retryData?.message ||
+            retryData?.error ||
+            "Something went wrong. Please try again.",
+          data: retryData?.data,
+        };
+      }
+
+      return retryData;
+    }
+
+    if (typeof window !== "undefined") {
+      window.location.href = "/login";
+    }
+
     throw {
-      statusCode: response.status,
-      message:
-        data?.message ||
-        data?.error ||
-        "Something went wrong. Please try again.",
-      data: data?.data,
+      statusCode: 401,
+      message: "Your session has expired. Please login again.",
     };
   }
 
-  return data;
+  const data = await response.json().catch(() => null);
+
+  throw {
+    statusCode: response.status,
+    message:
+      data?.message || data?.error || "Something went wrong. Please try again.",
+    data: data?.data,
+  };
 }
