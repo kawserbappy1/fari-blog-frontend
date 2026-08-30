@@ -3,8 +3,12 @@ import type {
   ApiResponse,
   AuthResponse,
   ChangePasswordPayload,
+  ForgotPasswordPayload,
+  ResetPasswordPayload,
   UpdateProfilePayload,
   User,
+  VerifyForgotPasswordPayload,
+  VerifyForgotPasswordResponse,
 } from "@/types/auth";
 
 // ============================================
@@ -91,6 +95,42 @@ export const changePassword = async (
 ): Promise<AuthResponse> => {
   return apiClient<AuthResponse>("/auth/change-password", {
     method: "PATCH",
+    body: JSON.stringify(payload),
+  });
+};
+
+// ============================================
+// Forgot password
+// ============================================
+export const forgotPassword = async (payload: ForgotPasswordPayload) => {
+  return apiClient("/auth/forgot-password", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+};
+
+// ============================================
+// Verify Forgot password
+// ============================================
+export const verifyForgotPassword = async (
+  payload: VerifyForgotPasswordPayload,
+): Promise<{
+  success: boolean;
+  message: string;
+  data: VerifyForgotPasswordResponse;
+}> => {
+  return apiClient("/auth/verify-forgot-password", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+};
+
+// ============================================
+// Reset Forgot password
+// ============================================
+export const resetForgotPassword = async (payload: ResetPasswordPayload) => {
+  return apiClient("/auth/reset-password", {
+    method: "POST",
     body: JSON.stringify(payload),
   });
 };

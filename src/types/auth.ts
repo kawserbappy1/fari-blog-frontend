@@ -86,3 +86,18 @@ export type ChangePasswordPayload = {
   newPassword: string;
   confirmPassword: string;
 };
+export interface ForgotPasswordPayload {
+  email: string;
+}
+export interface VerifyForgotPasswordPayload {
+  email: string;
+  otp: string;
+}
+export interface VerifyForgotPasswordResponse {
+  resetToken: string;
+}
+export interface ResetPasswordPayload {
+  token: string;
+  newPassword: string;
+  confirmPassword: string;
+}
