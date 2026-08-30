@@ -66,44 +66,46 @@ export async function apiClient<T>(
     ...fetchOptions.headers,
   };
 
-  const response = await fetch(url, {
-    ...fetchOptions,
-    credentials: "include",
-    headers,
-  });
+  const makeRequest = () =>
+    fetch(url, {
+      ...fetchOptions,
+      credentials: "include",
+      headers,
+    });
+
+  let response = await makeRequest();
 
   if (response.ok) {
     return await response.json().catch(() => null);
   }
 
-  if (response.status === 401 && endpoint !== "/auth/refresh-token") {
+  if (
+    response.status === 401 &&
+    endpoint !== "/auth/refresh-token" &&
+    endpoint !== "/auth/login" &&
+    endpoint !== "/auth/forgot-password" &&
+    endpoint !== "/auth/verify-forgot-password" &&
+    endpoint !== "/auth/reset-password"
+  ) {
     const refreshed = await refreshAccessToken();
 
     if (refreshed) {
-      const retryResponse = await fetch(url, {
-        ...fetchOptions,
-        credentials: "include",
-        headers,
-      });
+      response = await makeRequest();
 
-      const retryData = await retryResponse.json().catch(() => null);
+      const retryData = await response.json().catch(() => null);
 
-      if (!retryResponse.ok) {
-        throw {
-          statusCode: retryResponse.status,
-          message:
-            retryData?.message ||
-            retryData?.error ||
-            "Something went wrong. Please try again.",
-          data: retryData?.data,
-        };
+      if (response.ok) {
+        return retryData;
       }
 
-      return retryData;
-    }
-
-    if (typeof window !== "undefined") {
-      window.location.href = "/login";
+      throw {
+        statusCode: response.status,
+        message:
+          retryData?.message ||
+          retryData?.error ||
+          "Something went wrong. Please try again.",
+        data: retryData?.data,
+      };
     }
 
     throw {

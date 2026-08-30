@@ -101,3 +101,12 @@ export interface ResetPasswordPayload {
   newPassword: string;
   confirmPassword: string;
 }
+export type GoogleLoginPayload = {
+  idToken: string;
+};
+
+export type GoogleLoginResponse = {
+  success: boolean;
+  message: string;
+  data: null;
+};

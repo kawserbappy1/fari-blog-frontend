@@ -24,6 +24,7 @@ import {
 } from "@/validations/auth/login.schema";
 import { useLogin } from "@/hooks/useLogin";
 import { useRouter } from "next/navigation";
+import GoogleLogin from "./GoogleLogin";
 
 const LoginForm = () => {
   const router = useRouter();
@@ -171,7 +172,7 @@ const LoginForm = () => {
             </div>
 
             {/* Google Login */}
-            {/* <GoogleLogin /> */}
+            <GoogleLogin />
           </form>
         </CardContent>
 

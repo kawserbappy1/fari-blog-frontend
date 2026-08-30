@@ -4,6 +4,8 @@ import type {
   AuthResponse,
   ChangePasswordPayload,
   ForgotPasswordPayload,
+  GoogleLoginPayload,
+  GoogleLoginResponse,
   ResetPasswordPayload,
   UpdateProfilePayload,
   User,
@@ -130,6 +132,19 @@ export const verifyForgotPassword = async (
 // ============================================
 export const resetForgotPassword = async (payload: ResetPasswordPayload) => {
   return apiClient("/auth/reset-password", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+};
+
+// ============================================
+// google login or registration
+// ============================================
+
+export const googleLogin = async (
+  payload: GoogleLoginPayload,
+): Promise<GoogleLoginResponse> => {
+  return apiClient<GoogleLoginResponse>("/auth/google", {
     method: "POST",
     body: JSON.stringify(payload),
   });
