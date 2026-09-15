@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Menu } from "lucide-react";
 import UserMenu from "./UserMenu";
 import { usePathname } from "next/navigation";
+import ThemeToggle from "./../../thems/ThemeToggle";
 
 type Props = {
   openNav: () => void;
@@ -44,6 +45,7 @@ const MainNav = ({ openNav }: Props) => {
 
         {/* Right Side */}
         <div className="flex items-center gap-3">
+          <ThemeToggle />
           {user ? (
             <UserMenu />
           ) : (
